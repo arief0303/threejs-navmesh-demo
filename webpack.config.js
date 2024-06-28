@@ -2,6 +2,7 @@ const path = require('path');
 
 const src = path.resolve(__dirname, 'src');
 const dist = path.resolve(__dirname, 'dist');
+const path = require('path');
 
 module.exports = {
   mode: 'development',
@@ -24,6 +25,6 @@ module.exports = {
     path: dist
   },
   devServer: {
-    static: dist,
+    static: path.join(__dirname, 'public'),
   },
 }
