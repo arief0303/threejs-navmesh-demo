@@ -1,4 +1,4 @@
-# vanilla-threejs-navmesh-example
+# vanilla-threejs-navmesh-demo
 
 Use `yarn` and then `yarn start`.
 
