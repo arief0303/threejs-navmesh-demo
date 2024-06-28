@@ -1,8 +1,7 @@
 const path = require('path');
 
 const src = path.resolve(__dirname, 'src');
-const dist = path.resolve(__dirname, 'dist');
-const path = require('path');
+const build = path.resolve(__dirname, 'build');
 
 module.exports = {
   mode: 'development',
@@ -22,9 +21,9 @@ module.exports = {
   },
   output: {
     filename: 'index.js',
-    path: dist
+    path: build
   },
   devServer: {
-    static: path.join(__dirname, 'public'),
+    static: build,
   },
 }
