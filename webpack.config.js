@@ -1,11 +1,11 @@
 const path = require('path');
 
 const src = path.resolve(__dirname, 'src');
-const dist = path.resolve(__dirname, 'dist');
+const public = path.resolve(__dirname, 'public');
 
 module.exports = {
   mode: 'development',
-  entry: './src/index.ts',
+  entry: './src/index.js',
   devtool: 'inline-source-map',
   module: {
     rules: [
@@ -21,9 +21,9 @@ module.exports = {
   },
   output: {
     filename: 'index.js',
-    path: dist
+    path: public
   },
   devServer: {
-    static: dist,
+    static: public,
   },
 }

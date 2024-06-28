@@ -33,7 +33,8 @@ orbitControls.maxPolarAngle = Math.PI / 2 - 0.05 // prevent camera below ground
 orbitControls.minPolarAngle = Math.PI / 4        // prevent top down view
 orbitControls.update();
 
-const dLight = new THREE.DirectionalLight('white', 0.6);
+// LIGHTS
+const dLight = new THREE.DirectionalLight('white', 0.8);
 dLight.position.x = 20;
 dLight.position.y = 30;
 dLight.castShadow = true;
@@ -46,10 +47,10 @@ dLight.shadow.camera.top = d;
 dLight.shadow.camera.bottom = - d;
 scene.add(dLight);
 
-const aLight = new THREE.AmbientLight('white', 0.4);
+const aLight = new THREE.AmbientLight('white', 0.5);
 scene.add(aLight);
 
-// ANIMATE
+// ATTACH RENDERER
 document.body.appendChild(renderer.domElement);
 
 // RESIZE HANDLER
@@ -60,22 +61,25 @@ function onWindowResize() {
 }
 window.addEventListener('resize', onWindowResize);
 
+// AGENT
 const agentHeight = 1.0;
 const agentRadius = 0.25;
 const agent = new THREE.Mesh(new THREE.CylinderGeometry(agentRadius, agentRadius, agentHeight), new THREE.MeshPhongMaterial({ color: 'green'}));
 agent.position.y = agentHeight / 2;
 const agentGroup = new THREE.Group();
 agentGroup.add(agent);
-agentGroup.position.z = 0;
+agentGroup.position.z = 8;
 agentGroup.position.x = 0;
 agentGroup.position.y = 1;
 scene.add(agentGroup);
 
+// LOAD LEVEL
 const loader = new GLTFLoader();
-loader.load('./glb/demo-level.glb', (gltf: GLTF) => {
+loader.load('./glb/demo-level.glb', (gltf) => {
     scene.add(gltf.scene);
 });
 
+// INITIALIZE THREE-PATHFINDING
 const pathfinding = new Pathfinding();
 const pathfindinghelper = new PathfindingHelper();
 scene.add(pathfindinghelper);
@@ -84,13 +88,12 @@ const SPEED = 5;
 let navmesh;
 let groupID;
 let navpath;
-loader.load('./glb/demo-level-navmesh.glb', (gltf: GLTF) => {
+loader.load('./glb/demo-level-navmesh.glb', (gltf) => {
     // scene.add(gltf.scene);
     gltf.scene.traverse((node) => {
         if (!navmesh && node.isObject3D && node.children && node.children.length > 0) {
             navmesh = node.children[0];
             pathfinding.setZoneData(ZONE, Pathfinding.createZone(navmesh.geometry));
-            groupID = pathfinding.getGroup(ZONE, agentGroup.position);
         }
     });
 });
@@ -98,13 +101,11 @@ loader.load('./glb/demo-level-navmesh.glb', (gltf: GLTF) => {
 // RAYCASTING
 const raycaster = new THREE.Raycaster(); // create once
 const clickMouse = new THREE.Vector2();  // create once
-let target: THREE.Vector3 = null;
 
-function intersect(pos: THREE.Vector2) {
+function intersect(pos) {
     raycaster.setFromCamera(pos, camera);
     return raycaster.intersectObjects(scene.children);
 }
-
 window.addEventListener('click', event => {
     // THREE RAYCASTER
     clickMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
@@ -112,11 +113,12 @@ window.addEventListener('click', event => {
   
     const found = intersect(clickMouse);
     if (found.length > 0) {
-        target = found[0].point;
+        let target = found[0].point;
         const agentpos = agentGroup.position;
         // console.log(`agentpos: ${JSON.stringify(agentpos)}`);
         // console.log(`target: ${JSON.stringify(target)}`);
 
+        groupID = pathfinding.getGroup(ZONE, agentGroup.position);
         // find closest node to agent, just in case agent is out of bounds
         const closest = pathfinding.getClosestNode(agentpos, ZONE, groupID);
         navpath = pathfinding.findPath(closest.centroid, target, ZONE, groupID);
@@ -130,27 +132,29 @@ window.addEventListener('click', event => {
     }
 })
 
-function moveTick ( delta: number ) {
+// MOVEMENT ALONG PATH
+function move ( delta ) {
     if ( !navpath || navpath.length <= 0 ) return
 
     let targetPosition = navpath[ 0 ];
-    const velocity = targetPosition.clone().sub( agentGroup.position );
+    const distance = targetPosition.clone().sub( agentGroup.position );
 
-    if (velocity.lengthSq() > 0.05 * 0.05) {
-        velocity.normalize();
+    if (distance.lengthSq() > 0.05 * 0.05) {
+        distance.normalize();
         // Move player to target
-        agentGroup.position.add( velocity.multiplyScalar( delta * SPEED ) );
+        agentGroup.position.add( distance.multiplyScalar( delta * SPEED ) );
     } else {
         // Remove node from the path we calculated
         navpath.shift();
     }
 }
 
+// GAMELOOP
 const clock = new THREE.Clock();
 let gameLoop = () => {
-    moveTick(clock.getDelta());
+    move(clock.getDelta());
     orbitControls.update()
     renderer.render(scene, camera);
-    setTimeout(gameLoop, 16);
+    requestAnimationFrame(gameLoop);
 };
 gameLoop();
