@@ -1,10 +1,6 @@
-# threejs-navmesh-example
+# vanilla-threejs-navmesh-example
 
-Try the [Stackblitz](https://stackblitz.com/github/tamani-coding/threejs-navmesh-example) 
-
-![Screenshot](https://github.com/tamani-coding/threejs-navmesh-example/blob/main/screenshot01.png?raw=true)
-
-Use `npm install` and then `npm run start`.
+Use `yarn` and then `yarn start`.
 
 See:
 
@@ -14,4 +10,4 @@ See:
 
 [UPBGE](https://upbge.org/) - used for building level mesh and the navmesh
 
-Blender project is inside `blender` folder and can be opened with UPBGE. GLB files (level and navmesh) are contained in `dist/glb`.
+GLB files (level and navmesh) are contained in `dist/glb`.
